@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discipulado: Dictado de Versículos</title>
+    <style>
+        :root { --primary: #6c5ce7; --bg: #f0f2f5; --success: #27ae60; --mic: #e74c3c; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+        .container { background: white; padding: 2rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 90%; max-width: 650px; text-align: center; }
+        .header { color: var(--primary); margin-bottom: 0.5rem; font-size: 0.9rem; font-weight: bold; text-transform: uppercase; }
+        .reference { font-size: 1.8rem; margin: 0.5rem 0; color: #2d3436; }
+        .verse-box { font-size: 1.2rem; margin: 1.5rem 0; color: #2d3436; min-height: 120px; line-height: 1.6; text-align: left; background: #fafafa; padding: 15px; border-radius: 10px; border: 1px solid #eee; }
+        .hidden-word { background: #dfe6e9; color: #dfe6e9; border-bottom: 2px solid #b2bec3; border-radius: 3px; }
+        
+        .input-group { display: flex; gap: 10px; margin-bottom: 1rem; }
+        input { flex: 1; padding: 15px; border: 2px solid #ddd; border-radius: 12px; font-size: 1.1rem; outline: none; }
+        
+        .btn-mic { background: var(--mic); color: white; border: none; border-radius: 50%; width: 54px; height: 54px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s; box-shadow: 0 4px 10px rgba(231, 76, 60, 0.3); }
+        .btn-mic.listening { animation: pulse 1.5s infinite; background: #ff7675; }
+        
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        
+        .status { font-weight: bold; min-height: 24px; margin: 10px 0; }
+        .progress-info { font-size: 0.85rem; color: #636e72; border-top: 1px solid #eee; padding-top: 1rem; display: flex; justify-content: space-between; }
+        .success { color: var(--success); }
+        .error { color: var(--mic); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">Discipulado Básico - Versículos de Memoria</div>
+    <h2 id="reference" class="reference">...</h2>
+    <div id="verse-display" class="verse-box"></div>
+    
+    <div class="input-group">
+        <input type="text" id="user-input" placeholder="Escribe o pulsa el micro para dictar..." autocomplete="off">
+        <button id="mic-btn" class="btn-mic" title="Dictar versículo">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+        </button>
+    </div>
+    
+    <div id="feedback" class="status"></div>
+    
+    <div class="progress-info">
+        <span>Versículo: <span id="v-count">0</span>/23</span>
+        <span>Dificultad: <span id="level-display">1</span></span>
+    </div>
+</div>
+
+<script>
+    const rawData = [
+        { ref: "Juan 1:12", text: "Mas a todos los que le recibieron, a los que creen en su nombre, les dio potestad de ser hechos hijos de Dios" },
+        { ref: "Juan 3:16", text: "Porque de tal manera amó Dios al mundo, que ha dado a su Hijo unigénito, para que todo aquel que en él cree, no se pierda, mas tenga vida eterna" },
+        { ref: "1 Pedro 2:2", text: "Desead, como niños recién nacidos, la leche espiritual no adulterada, para que por ella crezcáis para salvación" },
+        { ref: "2 Corintios 5:17", text: "De modo que si alguno está en Cristo, nueva criatura es; las cosas viejas pasaron; he aquí todas son hechas nuevas" },
+        { ref: "Hechos 2:38", text: "Pedro les dijo: Arrepentíos, y bautícese cada uno de vosotros en el nombre de Jesucristo para perdón de los pecados; y recibiréis el don del Espíritu Santo" },
+        { ref: "Salmos 63:1", text: "Dios, Dios mío eres tú; De madrugada te buscaré; Mi alma tiene sed de ti, mi carne te anhela, En tierra seca y árida donde no hay aguas" },
+        { ref: "Mateo 26:41", text: "Velad y orad, para que no entréis en tentación; el espíritu a la verdad está dispuesto, pero la carne es débil" },
+        { ref: "Josué 1:8", text: "Nunca se apartará de tu boca este libro de la ley, sino que de día y de noche meditarás en él, para que guardes y hagas conforme a todo lo que en él está escrito; porque entonces harás prosperar tu camino, y todo te saldrá bien" },
+        { ref: "Juan 5:39", text: "Escudriñad las Escrituras; porque a vosotros os parece que en ellas tenéis la vida eterna; y ellas son las que dan testimonio de mí" },
+        { ref: "Hebreos 4:12", text: "Porque la palabra de Dios es viva y eficaz, y más cortante que toda espada de dos filos; y penetra hasta partir el alma y el espíritu, las coyunturas y los tuétanos, y discierne los pensamientos y las intenciones del corazón" },
+        { ref: "Romanos 12:12", text: "Gozosos en la esperanza; sufridos en la tribulación; constantes en la oración" },
+        { ref: "Mateo 16:24", text: "Entonces Jesús dijo a sus discípulos: Si alguno quiere venir en pos de mí, niéguese a sí mismo, y tome su cruz, y sígame" },
+        { ref: "1 Pedro 5:8", text: "Sed sobrios, y velad; porque vuestro adversario el diablo, como león rugiente, anda alrededor buscando a quien devorar" },
+        { ref: "Santiago 4:7", text: "Someteos, pues, a Dios; resistid al diablo, y huirá de vosotros" },
+        { ref: "Romanos 3:23", text: "Por cuanto todos pecaron, y están destituidos de la gloria de Dios" },
+        { ref: "Romanos 6:23", text: "Porque la paga del pecado es muerte, mas la dádiva de Dios es vida eterna en Cristo Jesús Señor nuestro" },
+        { ref: "Salmos 37:4", text: "Deléitate asimismo en Jehová, Y él te concederá las peticiones de tu corazón" },
+        { ref: "Salmos 119:105", text: "Lámpara es a mis pies tu palabra, Y lumbrera a mi camino" },
+        { ref: "Juan 14:6", text: "Jesús le dijo: Yo soy el camino, y la verdad, y la vida; nadie viene al Padre, sino por mí" },
+        { ref: "Josué 1:9", text: "Mira que te mando que te esfuerces y seas valiente; no temas ni desmayes, porque Jehová tu Dios estará contigo en dondequiera que vayas" },
+        { ref: "Jeremías 33:3", text: "Clama a mí, y yo te responderé, y te enseñaré cosas grandes y ocultas que tú no conoces" },
+        { ref: "Salmos 133:1", text: "Mirad cuán bueno y cuán delicioso es Habitar los hermanos juntos en armonía" },
+        { ref: "Salmos 42:1", text: "Como el ciervo brama por las corrientes de las aguas, Así clama por ti, oh Dios, el alma mía" }
+    ];
+
+    function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    const bibleData = shuffle([...rawData]);
+    let currentIdx = 0, hiddenIndices = [], level = 1;
+
+    const refElem = document.getElementById("reference"), displayElem = document.getElementById("verse-display");
+    const inputElem = document.getElementById("user-input"), feedbackElem = document.getElementById("feedback");
+    const micBtn = document.getElementById("mic-btn");
+
+    // Configuración de Voz
+    const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = Recognition ? new Recognition() : null;
+
+    if (recognition) {
+        recognition.lang = 'es-ES';
+        recognition.continuous = false;
+        recognition.interimResults = false;
+
+        recognition.onstart = () => { micBtn.classList.add('listening'); feedbackElem.innerText = "Escuchando..."; };
+        recognition.onend = () => micBtn.classList.remove('listening');
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            inputElem.value = transcript;
+            checkVerse(transcript);
+        };
+    } else {
+        micBtn.style.display = "none"; // Ocultar si el navegador no lo soporta
+    }
+
+    micBtn.onclick = () => { if(recognition) recognition.start(); };
+
+    function loadVerse() {
+        if (currentIdx >= bibleData.length) {
+            displayElem.innerText = "¡Felicidades! Has completado el Discipulado Básico.";
+            document.querySelector(".input-group").style.display = "none";
+            return;
+        }
+        refElem.innerText = bibleData[currentIdx].ref;
+        document.getElementById("v-count").innerText = currentIdx + 1;
+        hiddenIndices = []; level = 1;
+        document.getElementById("level-display").innerText = level;
+        inputElem.value = "";
+        updateDisplay();
+    }
+
+    function updateDisplay() {
+        const words = bibleData[currentIdx].text.split(" ");
+        displayElem.innerHTML = words.map((word, i) => 
+            hiddenIndices.includes(i) ? `<span class="hidden-word">${word}</span>` : word
+        ).join(" ");
+    }
+
+    inputElem.addEventListener("input", (e) => checkVerse(e.target.value));
+
+    function checkVerse(text) {
+        const user = text.toLowerCase().replace(/[.,;¡!¿?]/g, "").trim();
+        const target = bibleData[currentIdx].text.toLowerCase().replace(/[.,;¡!¿?]/g, "").trim();
+
+        if (user === target) {
+            feedbackElem.innerText = "¡Excelente! Subiendo dificultad...";
+            feedbackElem.className = "status success";
+            setTimeout(nextLevel, 1200);
+        } else if (target.startsWith(user)) {
+            feedbackElem.className = "status";
+            feedbackElem.innerText = "Vas bien...";
+        } else {
+            feedbackElem.className = "status error";
+            feedbackElem.innerText = "Hay algo que no coincide.";
+        }
+    }
+
+    function nextLevel() {
+        const words = bibleData[currentIdx].text.split(" ");
+        const available = words.map((_, i) => i).filter(i => !hiddenIndices.includes(i));
+        
+        if (available.length > 0) {
+            let toHide = Math.ceil(words.length * 0.25);
+            for(let i=0; i < toHide && available.length > 0; i++) {
+                let randIdx = Math.floor(Math.random() * available.length);
+                hiddenIndices.push(available.splice(randIdx, 1)[0]);
+            }
+            level++;
+            document.getElementById("level-display").innerText = level;
+            inputElem.value = ""; feedbackElem.innerText = "";
+            updateDisplay();
+        } else {
+            currentIdx++;
+            loadVerse();
+        }
+    }
+
+    loadVerse();
+</script>
+
+</body>
+</html>
