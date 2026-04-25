@@ -4,123 +4,121 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mi Progreso: Discipulado</title>
+    <link rel="manifest" href="manifest.json">
     <style>
-        :root { --primary: #6c5ce7; --bg: #f0f2f5; --success: #27ae60; --error: #e74c3c; --accent: #f1c40f; }
+        :root { --primary: #6c5ce7; --bg: #f0f2f5; --success: #27ae60; --error: #e74c3c; --accent: #f1c40f; --whatsapp: #25d366; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; }
-        .container { background: white; padding: 2rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 95%; max-width: 650px; text-align: center; }
-        .header { color: var(--primary); font-weight: bold; text-transform: uppercase; letter-spacing: 1px; font-size: 0.8rem; }
-        .reference { font-size: 1.8rem; margin: 10px 0; color: #2d3436; }
-        .verse-box { font-size: 1.2rem; margin: 15px 0; color: #2d3436; min-height: 100px; line-height: 1.6; text-align: left; background: #fafafa; padding: 15px; border-radius: 12px; border: 1px solid #eee; position: relative; }
+        .container { background: white; padding: 1.5rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 95%; max-width: 600px; text-align: center; }
+        .header { color: var(--primary); font-weight: bold; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; }
+        .reference { font-size: 1.6rem; margin: 10px 0; color: #2d3436; }
+        .verse-box { font-size: 1.15rem; margin: 15px 0; color: #2d3436; min-height: 90px; line-height: 1.5; text-align: left; background: #fafafa; padding: 15px; border-radius: 12px; border: 1px solid #eee; }
         .hidden-word { background: #dfe6e9; color: #dfe6e9; border-bottom: 2px solid #b2bec3; border-radius: 3px; }
-        
-        .controls { display: flex; gap: 10px; margin-bottom: 1rem; }
-        input { flex: 1; padding: 15px; border: 2px solid #ddd; border-radius: 12px; font-size: 1.1rem; outline: none; transition: 0.3s; }
+        .controls { display: flex; gap: 8px; margin-bottom: 1rem; }
+        input { flex: 1; padding: 12px; border: 2px solid #ddd; border-radius: 10px; font-size: 1rem; outline: none; }
         input:focus { border-color: var(--primary); }
-        
-        button { border: none; border-radius: 12px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; color: white; }
-        .btn-mic { background: var(--error); width: 54px; }
-        .btn-hint { background: var(--accent); width: 54px; }
+        button { border: none; border-radius: 10px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; color: white; padding: 10px; }
+        .btn-mic { background: var(--error); flex: 0 0 45px; }
+        .btn-hint { background: var(--accent); flex: 0 0 45px; }
+        .btn-share { background: var(--whatsapp); width: 100%; margin-top: 10px; font-weight: bold; gap: 8px; font-size: 0.9rem; }
         .btn-mic.listening { animation: pulse 1.5s infinite; background: #ff7675; }
-        
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
-        
-        .status { font-weight: bold; min-height: 24px; margin-bottom: 10px; }
-        .trophy-room { width: 95%; max-width: 650px; margin-top: 20px; text-align: left; background: #fff; padding: 15px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        .trophy-item { display: inline-block; background: #e8f5e9; color: #2e7d32; padding: 5px 12px; border-radius: 20px; margin: 4px; font-size: 0.85rem; font-weight: bold; border: 1px solid #c8e6c9; }
-        
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        .status { font-weight: bold; min-height: 24px; margin-bottom: 10px; font-size: 0.9rem; }
         .success-text { color: var(--success); }
+        .trophy-room { width: 95%; max-width: 600px; margin-top: 20px; text-align: left; background: #fff; padding: 15px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .trophy-item { display: inline-block; background: #e8f5e9; color: #2e7d32; padding: 4px 10px; border-radius: 15px; margin: 3px; font-size: 0.8rem; font-weight: bold; border: 1px solid #c8e6c9; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header">Discipulado Básico - Memorización Progresiva</div>
+    <div class="header">Discipulado Básico - Memorización</div>
     <h2 id="reference" class="reference">Cargando...</h2>
     <div id="verse-display" class="verse-box"></div>
     
     <div class="controls">
-        <input type="text" id="user-input" placeholder="Escribe o dicta el versículo..." autocomplete="off">
+        <input type="text" id="user-input" placeholder="Escribe o dicta..." autocomplete="off">
         <button id="hint-btn" class="btn-hint" title="Ver pista">👁️</button>
         <button id="mic-btn" class="btn-mic" title="Dictar">🎤</button>
     </div>
     
     <div id="feedback" class="status"></div>
     
-    <div style="font-size: 0.8rem; color: #636e72;">
-        Dificultad: <span id="level-display">1</span> | Pulsa el ojo si necesitas ayuda.
+    <div style="font-size: 0.75rem; color: #636e72;">
+        Dificultad Nivel: <span id="level-display">1</span>
     </div>
+
+    <button id="whatsapp-btn" class="btn-share">
+        <span>Compartir App por WhatsApp</span>
+    </button>
 </div>
 
 <div class="trophy-room">
-    <h4 style="margin-top:0; color: #2d3436;">🏆 Versículos Conseguidos:</h4>
-    <div id="trophies">Aún no has completado ninguno. ¡Ánimo!</div>
+    <h4 style="margin:0 0 10px 0; font-size: 0.9rem; color: #2d3436;">🏆 Versículos Memorizados:</h4>
+    <div id="trophies" style="font-size: 0.8rem; color: #999;">¡Completa un versículo para ganar un trofeo!</div>
 </div>
 
 <script>
     const bibleData = [
-        { ref: "Juan 1:12", text: "Mas a todos los que le recibieron, a los que creen en su nombre, les dio potestad de ser hechos hijos de Dios" },
-        { ref: "Juan 3:16", text: "Porque de tal manera amó Dios al mundo, que ha dado a su Hijo unigénito, para que todo aquel que en él cree, no se pierda, mas tenga vida eterna" },
-        { ref: "1 Pedro 2:2", text: "Desead, como niños recién nacidos, la leche espiritual no adulterada, para que por ella crezcáis para salvación" },
-        { ref: "2 Corintios 5:17", text: "De modo que si alguno está en Cristo, nueva criatura es; las cosas viejas pasaron; he aquí todas son hechas nuevas" },
-        { ref: "Hechos 2:38", text: "Pedro les dijo: Arrepentíos, y bautícese cada uno de vosotros en el nombre de Jesucristo para perdón de los pecados; y recibiréis el don del Espíritu Santo" },
-        { ref: "Salmos 63:1", text: "Dios, Dios mío eres tú; De madrugada te buscaré; Mi alma tiene sed de ti, mi carne te anhela, En tierra seca y árida donde no hay aguas" },
-        { ref: "Mateo 26:41", text: "Velad y orad, para que no entréis en tentación; el espíritu a la verdad está dispuesto, pero la carne es débil" },
-        { ref: "Josué 1:8", text: "Nunca se apartará de tu boca este libro de la ley, sino que de día y de noche meditarás en él, para que guardes y hagas conforme a todo lo que en él está escrito; porque entonces harás prosperar tu camino, y todo te saldrá bien" },
-        { ref: "Juan 5:39", text: "Escudriñad las Escrituras; porque a vosotros os parece que en ellas tenéis la vida eterna; y ellas son las que dan testimonio de mí" },
-        { ref: "Hebreos 4:12", text: "Porque la palabra de Dios es viva y eficaz, y más cortante que toda espada de dos filos; y penetra hasta partir el alma y el espíritu, las coyunturas y los tuétanos, y discierne los pensamientos y las intenciones del corazón" },
-        { ref: "Romanos 12:12", text: "Gozosos en la esperanza; sufridos en la tribulación; constantes en la oración" },
-        { ref: "Mateo 16:24", text: "Entonces Jesús dijo a sus discípulos: Si alguno quiere venir en pos de mí, niéguese a sí mismo, y tome su cruz, y sígame" },
-        { ref: "1 Pedro 5:8", text: "Sed sobrios, y velad; porque vuestro adversario el diablo, como león rugiente, anda alrededor buscando a quien devorar" },
-        { ref: "Santiago 4:7", text: "Someteos, pues, a Dios; resistid al diablo, y huirá de vosotros" },
-        { ref: "Romanos 3:23", text: "Por cuanto todos pecaron, y están destituidos de la gloria de Dios" },
-        { ref: "Romanos 6:23", text: "Porque la paga del pecado es muerte, mas la dádiva de Dios es vida eterna en Cristo Jesús Señor nuestro" },
-        { ref: "Salmos 37:4", text: "Deléitate asimismo en Jehová, Y él te concederá las peticiones de tu corazón" },
-        { ref: "Salmos 119:105", text: "Lámpara es a mis pies tu palabra, Y lumbrera a mi camino" },
-        { ref: "Juan 14:6", text: "Jesús le dijo: Yo soy el camino, y la verdad, y la vida; nadie viene al Padre, sino por mí" },
-        { ref: "Josué 1:9", text: "Mira que te mando que te esfuerces y seas valiente; no temas ni desmayes, porque Jehová tu Dios estará contigo en dondequiera que vayas" }
+        { ref: "Juan 1:12", text: "Mas a todos los que le recibieron a los que creen en su nombre les dio potestad de ser hechos hijos de Dios" },
+        { ref: "Juan 3:16", text: "Porque de tal manera amó Dios al mundo que ha dado a su Hijo unigénito para que todo aquel que en él cree no se pierda mas tenga vida eterna" },
+        { ref: "1 Pedro 2:2", text: "Desead como niños recién nacidos la leche espiritual no adulterada para que por ella crezcáis para salvación" },
+        { ref: "2 Corintios 5:17", text: "De modo que si alguno está en Cristo nueva criatura es las cosas viejas pasaron he aquí todas son hechas nuevas" },
+        { ref: "Hechos 2:38", text: "Pedro les dijo Arrepentíos y bautícese cada uno de vosotros en el nombre de Jesucristo para perdón de los pecados y recibiréis el don del Espíritu Santo" },
+        { ref: "Salmos 63:1", text: "Dios Dios mío eres tú De madrugada te buscaré Mi alma tiene sed de ti mi carne te anhela En tierra seca y árida donde no hay aguas" },
+        { ref: "Mateo 26:41", text: "Velad y orad para que no entréis en tentación el espíritu a la verdad está dispuesto pero la carne es débil" },
+        { ref: "Josué 1:8", text: "Nunca se apartará de tu boca este libro de la ley sino que de día y de noche meditarás en él para que guardes y hagas conforme a todo lo que en él está escrito porque entonces harás prosperar tu camino y todo te saldrá bien" },
+        { ref: "Juan 5:39", text: "Escudriñad las Escrituras porque a vosotros os parece que en ellas tenéis la vida eterna y ellas son las que dan testimonio de mí" },
+        { ref: "Hebreos 4:12", text: "Porque la palabra de Dios es viva y eficaz y más cortante que toda espada de dos filos y penetra hasta partir el alma y el espíritu las coyunturas y los tuétanos y discierne los pensamientos y las intenciones del corazón" },
+        { ref: "Romanos 12:12", text: "Gozosos en la esperanza sufridos en la tribulación constantes en la oración" },
+        { ref: "Mateo 16:24", text: "Entonces Jesús dijo a sus discípulos Si alguno quiere venir en pos de mí niéguese a sí mismo y tome su cruz y sígame" },
+        { ref: "1 Pedro 5:8", text: "Sed sobrios y velad porque vuestro adversario el diablo como león rugiente anda alrededor buscando a quien devorar" },
+        { ref: "Santiago 4:7", text: "Someteos pues a Dios resistid al diablo y huirá de vosotros" },
+        { ref: "Romanos 3:23", text: "Por cuanto todos pecaron y están destituidos de la gloria de Dios" },
+        { ref: "Romanos 6:23", text: "Porque la paga del pecado es muerte mas la dádiva de Dios es vida eterna en Cristo Jesús Señor nuestro" },
+        { ref: "Salmos 37:4", text: "Deléitate asimismo en Jehová Y él te concederá las peticiones de tu corazón" },
+        { ref: "Salmos 119:105", text: "Lámpara es a mis pies tu palabra Y lumbrera a mi camino" },
+        { ref: "Juan 14:6", text: "Jesús le dijo Yo soy el camino y la verdad y la vida nadie viene al Padre sino por mí" },
+        { ref: "Josué 1:9", text: "Mira que te mando que te esfuerces y seas valiente no temas ni desmayes porque Jehová tu Dios estará contigo en dondequiera que vayas" }
     ];
 
-    let currentVerseIdx = Math.floor(Math.random() * bibleData.length);
+    let currentIdx = Math.floor(Math.random() * bibleData.length);
     let hiddenIndices = [], level = 1, achievements = [];
 
     const displayElem = document.getElementById("verse-display"), inputElem = document.getElementById("user-input");
     const feedbackElem = document.getElementById("feedback"), trophyElem = document.getElementById("trophies");
 
-    // Limpiador de texto (Quita tildes, puntuación y mayúsculas)
     function clean(text) {
-        return text.toLowerCase()
-            .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Quita tildes
-            .replace(/[.,;¡!¿?]/g, "").trim();
+        return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[.,;¡!¿?]/g, "").trim();
     }
 
     function updateDisplay(showAll = false) {
-        const words = bibleData[currentVerseIdx].text.split(" ");
+        const words = bibleData[currentIdx].text.split(" ");
         displayElem.innerHTML = words.map((word, i) => 
             (hiddenIndices.includes(i) && !showAll) ? `<span class="hidden-word">${word}</span>` : word
         ).join(" ");
     }
 
-    // Botón de Pista (Ojo)
     document.getElementById("hint-btn").onclick = () => {
-        updateDisplay(true); // Muestra todo
-        setTimeout(() => updateDisplay(false), 3000); // Lo oculta tras 3 segundos
+        updateDisplay(true);
         feedbackElem.innerText = "¡Memoriza rápido!";
+        setTimeout(() => { 
+            updateDisplay(false); 
+            if(feedbackElem.innerText === "¡Memoriza rápido!") feedbackElem.innerText = "";
+        }, 3000);
     };
 
-    // Validación
-    inputElem.addEventListener("input", (e) => {
-        const user = clean(e.target.value);
-        const target = clean(bibleData[currentIdx]?.text || bibleData[currentVerseIdx].text);
-
-        if (user === target) {
-            feedbackElem.innerText = "¡Excelente!";
+    inputElem.addEventListener("input", () => {
+        const user = clean(inputElem.value);
+        const target = clean(bibleData[currentIdx].text);
+        if (user === target && user !== "") {
+            feedbackElem.innerText = "¡Correcto!";
             feedbackElem.className = "status success-text";
-            setTimeout(nextLevel, 1000);
+            setTimeout(nextLevel, 800);
         }
     });
 
     function nextLevel() {
-        const words = bibleData[currentVerseIdx].text.split(" ");
+        const words = bibleData[currentIdx].text.split(" ");
         const available = words.map((_, i) => i).filter(i => !hiddenIndices.includes(i));
         
         if (available.length > 0) {
@@ -133,10 +131,18 @@
             inputElem.value = ""; feedbackElem.innerText = "";
             updateDisplay();
         } else {
-            addTrophy(bibleData[currentVerseIdx].ref);
-            currentVerseIdx = Math.floor(Math.random() * bibleData.length);
+            addTrophy(bibleData[currentIdx].ref);
+            currentIdx = Math.floor(Math.random() * bibleData.length);
             loadVerse();
         }
+    }
+
+    function loadVerse() {
+        document.getElementById("reference").innerText = bibleData[currentIdx].ref;
+        hiddenIndices = []; level = 1;
+        document.getElementById("level-display").innerText = level;
+        inputElem.value = ""; feedbackElem.innerText = "";
+        updateDisplay();
     }
 
     function addTrophy(ref) {
@@ -150,15 +156,13 @@
         }
     }
 
-    function loadVerse() {
-        document.getElementById("reference").innerText = bibleData[currentVerseIdx].ref;
-        hiddenIndices = []; level = 1;
-        document.getElementById("level-display").innerText = level;
-        inputElem.value = ""; feedbackElem.innerText = "";
-        updateDisplay();
-    }
+    document.getElementById("whatsapp-btn").onclick = () => {
+        const url = window.location.href;
+        const text = "¡Mira esta app para memorizar versículos del discipulado! 📖✨ " + url;
+        window.open("https://api.whatsapp.com/send?text=" + encodeURIComponent(text));
+    };
 
-    // Configuración Micrófono
+    // Micrófono
     const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (Recognition) {
         const rec = new Recognition();
@@ -171,7 +175,6 @@
             inputElem.dispatchEvent(new Event('input'));
         };
     }
-
     loadVerse();
 </script>
 </body>
