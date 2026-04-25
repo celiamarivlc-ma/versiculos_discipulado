@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reto de Memorización - Iglesia Evangélica</title>
+    <title>Memorizador Personalizado</title>
     <style>
         :root { --primary: #6c5ce7; --bg: #f0f2f5; --success: #27ae60; --dark: #2d3436; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
@@ -14,10 +14,11 @@
         .hidden-word { background: #dfe6e9; color: #dfe6e9; border-bottom: 2px solid #b2bec3; border-radius: 3px; }
         input, textarea { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 10px; font-size: 1rem; outline: none; margin-bottom: 10px; box-sizing: border-box; }
         input:focus, textarea:focus { border-color: var(--primary); }
-        button { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; margin: 5px; }
+        button { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
         button:hover { opacity: 0.9; }
         .status { margin-top: 10px; font-weight: bold; min-height: 24px; }
         .admin-panel { background: #fff; padding: 20px; border-radius: 15px; width: 95%; max-width: 650px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .admin-title { font-size: 1.1rem; margin-bottom: 15px; color: var(--dark); border-bottom: 1px solid #eee; padding-bottom: 5px; }
         .error { color: #e74c3c; }
         .success { color: var(--success); }
     </style>
@@ -25,26 +26,26 @@
 <body>
 
 <div class="container">
-    <div class="header">Reto de Memorización Bíblica</div>
+    <div class="header">Mi Memorizador de Biblia</div>
     <h2 id="reference" class="reference">Cargando...</h2>
     <div id="verse-display" class="verse-box"></div>
     <input type="text" id="user-input" placeholder="Escribe el versículo aquí..." autocomplete="off">
     <div id="feedback" class="status"></div>
-    <div style="margin-top: 15px; font-size: 0.85rem; color: #888;">
-        Dificultad: <span id="level-display">1</span> | Versículos: <span id="current-num">0</span>/<span id="total-count">0</span>
+    <div style="margin-top: 15px; font-size: 0.8rem; color: #888;">
+        Dificultad: <span id="level-display">1</span> | Total Versículos: <span id="total-count">0</span>
     </div>
 </div>
 
 <div class="admin-panel">
-    <div style="font-weight: bold; margin-bottom: 10px;">➕ Añadir nuevo versículo</div>
+    <div class="admin-title">➕ Añadir nuevo versículo</div>
     <input type="text" id="new-ref" placeholder="Ej: Filipenses 4:13">
-    <textarea id="new-text" rows="2" placeholder="Escribe el texto exacto..."></textarea>
-    <button onclick="addNewVerse()">Guardar y Reiniciar</button>
-    <button onclick="clearMyVerses()" style="background: #95a5a6; font-size: 0.7rem;">Borrar versículos añadidos</button>
+    <textarea id="new-text" rows="2" placeholder="Escribe el texto del versículo aquí..."></textarea>
+    <button onclick="addNewVerse()">Guardar Versículo</button>
+    <button onclick="clearMyVerses()" style="background: #95a5a6; font-size: 0.7rem;">Borrar mis añadidos</button>
 </div>
 
 <script>
-    // Versículos base
+    // Versículos base del PDF [cite: 2, 3, 4, 5, 7, 9, 11, 13, 15, 17, 19, 20, 21, 22, 29, 30, 31, 32, 33, 35, 37, 38, 41]
     const defaultVerses = [
         { ref: "Juan 1:12", text: "Mas a todos los que le recibieron, a los que creen en su nombre, les dio potestad de ser hechos hijos de Dios" },
         { ref: "Juan 3:16", text: "Porque de tal manera amó Dios al mundo, que ha dado a su Hijo unigénito, para que todo aquel que en él cree, no se pierda, mas tenga vida eterna" },
@@ -65,7 +66,10 @@
         { ref: "Salmos 37:4", text: "Deléitate asimismo en Jehová, Y él te concederá las peticiones de tu corazón" },
         { ref: "Salmos 119:105", text: "Lámpara es a mis pies tu palabra, Y lumbrera a mi camino" },
         { ref: "Juan 14:6", text: "Jesús le dijo: Yo soy el camino, y la verdad, y la vida; nadie viene al Padre, sino por mí" },
-        { ref: "Josué 1:9", text: "Mira que te mando que te esfuerces y seas valiente; no temas ni desmayes, porque Jehová tu Dios estará contigo en dondequiera que vayas" }
+        { ref: "Josué 1:9", text: "Mira que te mando que te esfuerces y seas valiente; no temas ni desmayes, porque Jehová tu Dios estará contigo en dondequiera que vayas" },
+        { ref: "Jeremías 33:3", text: "Clama a mí, y yo te responderé, y te enseñaré cosas grandes y ocultas que tú no conoces" },
+        { ref: "Salmos 133:1", text: "Mirad cuán bueno y cuán delicioso es Habitar los hermanos juntos en armonía" },
+        { ref: "Salmos 42:1", text: "Como el ciervo brama por las corrientes de las aguas, Así clama por ti, oh Dios, el alma mía" }
     ];
 
     let allVerses = [];
@@ -73,18 +77,22 @@
     let hiddenIndices = [];
     let level = 1;
 
+    // Cargar datos al iniciar
     function init() {
         const saved = JSON.parse(localStorage.getItem('myCustomVerses') || "[]");
-        allVerses = [...defaultVerses, ...saved].sort(() => Math.random() - 0.5);
+        allVerses = shuffle([...defaultVerses, ...saved]);
         document.getElementById("total-count").innerText = allVerses.length;
         loadVerse();
+    }
+
+    function shuffle(array) {
+        return array.sort(() => Math.random() - 0.5);
     }
 
     function loadVerse() {
         if (allVerses.length === 0) return;
         const v = allVerses[currentIdx];
         document.getElementById("reference").innerText = v.ref;
-        document.getElementById("current-num").innerText = currentIdx + 1;
         hiddenIndices = [];
         level = 1;
         document.getElementById("level-display").innerText = level;
@@ -102,15 +110,15 @@
     document.getElementById("user-input").addEventListener("input", (e) => {
         const user = e.target.value.toLowerCase().replace(/[.,;¡!¿?]/g, "").trim();
         const target = allVerses[currentIdx].text.toLowerCase().replace(/[.,;¡!¿?]/g, "").trim();
-        const fb = document.getElementById("feedback");
+        const feedback = document.getElementById("feedback");
 
         if (user === target) {
-            fb.innerText = "¡Correcto!"; fb.className = "status success";
+            feedback.innerText = "¡Excelente!"; feedback.className = "status success";
             setTimeout(nextLevel, 800);
         } else if (target.startsWith(user)) {
-            fb.innerText = "Escribiendo..."; fb.className = "status";
+            feedback.innerText = "Escribiendo..."; feedback.className = "status";
         } else {
-            fb.innerText = "Error detectado"; fb.className = "status error";
+            feedback.innerText = "Error detectado"; feedback.className = "status error";
         }
     });
 
@@ -135,18 +143,24 @@
         }
     }
 
+    // Funciones de Administración
     function addNewVerse() {
         const ref = document.getElementById("new-ref").value.trim();
         const text = document.getElementById("new-text").value.trim();
-        if (!ref || !text) return alert("Completa ambos campos");
+        
+        if (!ref || !text) { alert("Por favor llena ambos campos"); return; }
+
         const saved = JSON.parse(localStorage.getItem('myCustomVerses') || "[]");
         saved.push({ ref, text });
         localStorage.setItem('myCustomVerses', JSON.stringify(saved));
-        location.reload();
+        
+        alert("¡Versículo guardado! Refresca la página para que aparezca en la mezcla.");
+        document.getElementById("new-ref").value = "";
+        document.getElementById("new-text").value = "";
     }
 
     function clearMyVerses() {
-        if(confirm("¿Borrar tus versículos añadidos?")) {
+        if(confirm("¿Seguro que quieres borrar SOLO los versículos que tú añadiste?")) {
             localStorage.removeItem('myCustomVerses');
             location.reload();
         }
@@ -154,5 +168,6 @@
 
     init();
 </script>
+
 </body>
 </html>
